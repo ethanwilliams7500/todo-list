@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Todo List</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .box {
+            width: 500px;
+            max-width: 95%;
+            margin: 40px auto;
+            border-radius: 12px;
+            background-color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .info h1 {
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        .info input {
+            padding: 10px;
+            width: 40%;
+            margin: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .info input:focus {
+            border-color: #007bff;
+        }
+
+        #addBtn {
+            padding: 10px 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #addBtn:hover {
+            background-color: #218838;
+        }
+
+        #taskList {
+            list-style: none;
+            max-height: 420px;
+            overflow-y: auto;
+            border-top: 1px solid #ddd;
+        }
+
+        #taskList li {
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #fafafa;
+            transition: transform 0.2s ease;
+        }
+
+        #taskList li header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #taskList li footer {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+
+        .clear {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+
+        .clear:hover {
+            background-color: #c82333;
+        }
+
+        @media (max-width: 600px) {
+            .info input {
+                width: 80%;
+                display: block;
+                margin: 10px auto;
+            }
+
+            #addBtn {
+                display: block;
+                width: 80%;
+                margin: 10px auto;
+            }
+
+            #taskList li header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+<section class="box">
+    <div class="info">
+        <h1>Todo List</h1>
+        <input type="text" id="taskInput1" placeholder="输入任务名称">
+        <input type="text" id="taskInput2" placeholder="输入任务内容">
+        <button id="addBtn">添加任务</button>
+    </div>
+    <ul id="taskList"></ul>
+</section>
+<script>
+    const addBtn = document.querySelector('#addBtn')
+    const taskName = document.querySelector('#taskInput1')
+    const taskContent = taskName.nextElementSibling
+    const list = document.querySelector('#taskList')
+    const arr = JSON.parse(localStorage.getItem('notes')) || []
+
+    addBtn.addEventListener('click', () => {
+        const name = taskName.value
+        if (name.trim() === '' || taskContent.value.trim() === '') return alert('不能输入为空')
+        if (name.length > 6) return alert('任务名不能大于6个字符')
+        const obj = {
+            taskName: taskName.value,
+            taskContent: taskContent.value,
+            createdAt: new Date().toLocaleString()
+        }
+        arr.push(obj)
+        localStorage.setItem('notes', JSON.stringify(arr))
+        taskName.value = ''
+        taskContent.value = ''
+        render()
+    })
+
+    const render = () => {
+        list.innerHTML = arr.map(({taskName, taskContent, createdAt}, index) => {
+            return `
+            <li>
+                <header>
+                    <span class="task-name">任务名称: ${taskName}</span>
+                    <span class="task-date">日期: ${createdAt}</span>
+                    <button class="clear" data-id="${index}">删除</button>
+                </header>
+                <footer>${taskContent}</footer>
+            </li>`
+        }).join('')
+    }
+    render()
+
+    list.addEventListener('click', e => {
+        const {tagName, dataset} = e.target
+        if (tagName === 'BUTTON') {
+            if (!confirm('确定要删除吗？')) return
+            arr.splice(dataset.id, 1)
+            localStorage.setItem('notes', JSON.stringify(arr))
+            render()
+        }
+    });
+
+    [taskContent, taskName].forEach(item => {
+        item.addEventListener('keyup', e => {
+                if (e.key === 'Enter') addBtn.click()
+            }
+        )
+    })
+</script>
+</body>
+</html>
